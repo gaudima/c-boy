@@ -15,7 +15,10 @@ set(SOURCE_FILES
         imgui/imgui-events-SFML.h imgui/imgui-rendering-SFML.h
         imgui/imgui_internal.h imgui/stb_rect_pack.h imgui/stb_textedit.h
         imgui/stb_truetype.h imgui/imgui_draw.cpp imgui/imgui_demo.cpp
-        jsoncpp/jsoncpp.cpp arch/joy.cpp arch/joy.h arch/mbc/mbc.cpp arch/mbc/mbc.h arch/mbc/mbc2.cpp arch/mbc/mbc2.h arch/mbc/nombc.cpp arch/mbc/nombc.h arch/mbc/mbc1.cpp arch/mbc/mbc1.h)
+        jsoncpp/jsoncpp.cpp cppformat/format.cc cppformat/format.h
+        arch/joy.cpp arch/joy.h arch/mbc/mbc.cpp arch/mbc/mbc.h
+        arch/mbc/mbc2.cpp arch/mbc/mbc2.h arch/mbc/nombc.cpp
+        arch/mbc/nombc.h arch/mbc/mbc1.cpp arch/mbc/mbc1.h)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 

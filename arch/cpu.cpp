@@ -6,6 +6,7 @@
 #include "gpu.h"
 #include "mmu.h"
 #include "ops.h"
+#include "../cppformat/format.h"
 #include <sstream>
 #include <iomanip>
 #include <cstring>
@@ -32,63 +33,64 @@ void Emu::Cpu::reset() {
     r.ime = 0;
     halt = 0;
 
-    paused = false;
+    paused = true;
     std::cout << "Cpu: Reset" << std::endl;
+}
+
+std::string Emu::Cpu::getRegString() {
+    fmt::MemoryWriter writer;
+    writer.write("af: 0x{:04X}\n", r.af);
+    writer.write("bc: 0x{:04X}\n", r.bc);
+    writer.write("de: 0x{:04X}\n", r.de);
+    writer.write("hl: 0x{:04X}\n", r.hl);
+    writer.write("sp: 0x{:04X}\n", r.sp);
+    writer.write("pc: 0x{:04X}\n", r.pc);
+    writer.write("m: {:d}\n", r.m);
+    writer.write("ime: {:d}\n", r.ime);
+    uint8_t op = emu->mmu->rb(r.pc);
+    writer << "op: ";
+    switch(Ops::opTable[op].argsize) {
+        case 0: {
+            writer.write(Ops::opTable[op].desc);
+        }
+            break;
+        case 1: {
+            uint8_t arg = emu->mmu->rb(r.pc + 1);
+            writer.write(Ops::opTable[op].desc, arg);
+        }
+            break;
+        case 2: {
+            uint16_t arg = emu->mmu->rb(r.pc + 1);
+            writer.write(Ops::opTable[op].desc, arg);
+        }
+            break;
+    }
+    return writer.str();
 }
 
 void Emu::Cpu::exec() {
     uint8_t op = emu->mmu->rb(r.pc);
-    char s[500];
-    snprintf(s, 500, "af: 0x%04X\n"
-                     "bc: 0x%04X\n"
-                     "de: 0x%04X\n"
-                     "hl: 0x%04X\n"
-                     "sp: 0x%04X\n"
-                     "pc: 0x%04X\n"
-                     "m: %d\n"
-                     "ime: %d",
-             r.af,
-             r.bc,
-             r.de,
-             r.hl,
-             r.sp,
-             r.pc,
-             r.m,
-             r.ime);
     r.m = 0;
-    char s1[100];
     r.pc++;
     switch (Ops::opTable[op].argsize) {
         case 0: {
-            snprintf(s1, 100, Ops::opTable[op].desc);
-//            if(op == 0xF1 && r.pc > 0x0100) {
-//                paused = true;
-//            }
             Ops::opTable[op].pf(0);
         }
             break;
         case 1: {
             uint8_t arg = emu->mmu->rb(Cpu::r.pc);
             Cpu::r.pc++;
-            if (op == 0xCB) {
-                snprintf(s1, 100, Ops::opTable[op].desc, Ops::cbTable[arg]);
-
-            } else {
-                snprintf(s1, 100, Ops::opTable[op].desc, arg);
-            }
             Ops::opTable[op].pf(arg);
         }
             break;
         case 2: {
             uint16_t arg = emu->mmu->rw(Cpu::r.pc);
             Cpu::r.pc += 2;
-            snprintf(s1, 100, Ops::opTable[op].desc, arg);
             Ops::opTable[op].pf(arg);
         }
             break;
     }
     char ss[1000];
-    snprintf(ss, 1000, "%s\nop: %s", s, s1);
     r.m += Ops::opTable[op].m;
     clock += r.m;
     frameClock += r.m;
@@ -96,15 +98,11 @@ void Emu::Cpu::exec() {
     updateTimer(r.m);
     emu->gpu->exec(r.m);
     processInterrupts();
-    regnop = std::string(ss);
 }
 
 void Emu::Cpu::runFrame() {
     while (!paused) {
         exec();
-//        if(r.pc == 0x0040) {
-//            paused = true;
-//        }
         if (frameClock > 17555) {
             frameClock = 0;
             break;

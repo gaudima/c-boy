@@ -64,7 +64,7 @@ public:
 
     Reg r;
     bool halt;
-    std::string regnop;
+
     bool paused;
 
     void reset();
@@ -84,6 +84,8 @@ public:
     void setTimerFreq();
 
     void updateDivider(uint16_t m);
+
+    std::string getRegString();
 
 private:
     Emu *emu;

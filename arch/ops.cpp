@@ -900,7 +900,7 @@ void Emu::Cpu::Ops::DI(uint16_t arg) { emu->cpu->r.ime=0; }
 void Emu::Cpu::Ops::EI(uint16_t arg) { emu->cpu->r.ime=1; }
 
 void Emu::Cpu::Ops::XX(uint16_t arg) {
-    std::cout << "Cpu: Uknown instruction: " << std::hex << emu->cpu->r.pc - 1 << std::endl;
+    std::cout << "Cpu: Unknown instruction: " << std::hex << emu->cpu->r.pc - 1 << std::endl;
 }
 
 void Emu::Cpu::Ops::MAPcb(uint16_t arg) {
@@ -910,68 +910,68 @@ void Emu::Cpu::Ops::MAPcb(uint16_t arg) {
 
 Emu::Cpu::Ops::Op Emu::Cpu::Ops::opTable[256] = {
         {"NOP",                     0, 1, NOP},       // 0x00
-        {"LD BC, 0x%04X",           2, 3, LDBCnn},    // 0x01
+        {"LD BC, 0x{:04X}",         2, 3, LDBCnn},    // 0x01
         {"LD (BC), A",              0, 2, LDBCmA},    // 0x02
         {"INC BC",                  0, 2, INCBC},     // 0x03
         {"INC B",                   0, 1, INCr_b},    // 0x04
         {"DEC B",                   0, 1, DECr_b},    // 0x05
-        {"LD B, 0x%02X",            1, 2, LDrn_b},    // 0x06
+        {"LD B, 0x{:02X}",          1, 2, LDrn_b},    // 0x06
         {"RLCA",                    0, 1, RLCA},      // 0x07
-        {"LD (0x%04X), SP",         2, 5, LDmmSP},    // 0x08
+        {"LD (0x{:04X}), SP",       2, 5, LDmmSP},    // 0x08
         {"ADD HL, BC",              0, 2, ADDHLBC},   // 0x09
         {"LD A, (BC)",              0, 2, LDABCm},    // 0x0a
         {"DEC BC",                  0, 2, DECBC},     // 0x0b
         {"INC C",                   0, 1, INCr_c},    // 0x0c
         {"DEC C",                   0, 1, DECr_c},    // 0x0d
-        {"LD C, 0x%02X",            1, 2, LDrn_c},    // 0x0e
+        {"LD C, 0x{:02X}",          1, 2, LDrn_c},    // 0x0e
         {"RRCA",                    0, 1, RRCA},      // 0x0f
         {"STOP",                    1, 1, STOP},      // 0x10
-        {"LD DE, 0x%04X",           2, 3, LDDEnn},    // 0x11
+        {"LD DE, 0x{:04X}",         2, 3, LDDEnn},    // 0x11
         {"LD (DE), A",              0, 2, LDDEmA},    // 0x12
         {"INC DE",                  0, 2, INCDE},     // 0x13
         {"INC D",                   0, 1, INCr_d},    // 0x14
         {"DEC D",                   0, 1, DECr_d},    // 0x15
-        {"LD D, 0x%02X",            1, 2, LDrn_d},    // 0x16
+        {"LD D, 0x{:02X}",          1, 2, LDrn_d},    // 0x16
         {"RLA",                     0, 1, RLA},       // 0x17
-        {"JR 0x%02X",               1, 3, JRn},       // 0x18
+        {"JR 0x{:02X}",             1, 3, JRn},       // 0x18
         {"ADD HL, DE",              0, 2, ADDHLDE},   // 0x19
         {"LD A, (DE)",              0, 2, LDADEm},    // 0x1a
         {"DEC DE",                  0, 2, DECDE},     // 0x1b
         {"INC E",                   0, 1, INCr_e},    // 0x1c
         {"DEC E",                   0, 1, DECr_e},    // 0x1d
-        {"LD E, 0x%02X",            1, 2, LDrn_e},    // 0x1e
+        {"LD E, 0x{:02X}",          1, 2, LDrn_e},    // 0x1e
         {"RRA",                     0, 1, RRA},       // 0x1f
-        {"JR NZ, 0x%02X",           1, 2, JRNZn},     // 0x20
-        {"LD HL, 0x%04X",           2, 3, LDHLnn},    // 0x21
+        {"JR NZ, 0x{:02X}",         1, 2, JRNZn},     // 0x20
+        {"LD HL, 0x{:04X}",         2, 3, LDHLnn},    // 0x21
         {"LDI (HL), A",             0, 2, LDHLIA},    // 0x22
         {"INC HL",                  0, 2, INCHL},     // 0x23
         {"INC H",                   0, 1, INCr_h},    // 0x24
         {"DEC H",                   0, 1, DECr_h},    // 0x25
-        {"LD H, 0x%02X",            1, 2, LDrn_h},    // 0x26
+        {"LD H, 0x{:02X}",          1, 2, LDrn_h},    // 0x26
         {"DAA",                     0, 1, DAA},       // 0x27
-        {"JR Z, 0x%02X",            1, 2, JRZn},      // 0x28
+        {"JR Z, 0x{:02X}",          1, 2, JRZn},      // 0x28
         {"ADD HL, HL",              0, 2, ADDHLHL},   // 0x29
         {"LDI A, (HL)",             0, 2, LDAHLI},    // 0x2a
         {"DEC HL",                  0, 2, DECHL},     // 0x2b
         {"INC L",                   0, 1, INCr_l},    // 0x2c
         {"DEC L",                   0, 1, DECr_l},    // 0x2d
-        {"LD L, 0x%02X",            1, 2, LDrn_l},    // 0x2e
+        {"LD L, 0x{:02X}",          1, 2, LDrn_l},    // 0x2e
         {"CPL",                     0, 1, CPL},       // 0x2f
-        {"JR NC, 0x%02X",           1, 2, JRNCn},     // 0x30
-        {"LD SP, 0x%04X",           2, 3, LDSPnn},    // 0x31
+        {"JR NC, 0x{:02X}",         1, 2, JRNCn},     // 0x30
+        {"LD SP, 0x{:04X}",         2, 3, LDSPnn},    // 0x31
         {"LDD (HL), A",             0, 2, LDHLDA},    // 0x32
         {"INC SP",                  0, 2, INCSP},     // 0x33
         {"INC (HL)",                0, 3, INCHLm},    // 0x34
         {"DEC (HL)",                0, 3, DECHLm},    // 0x35
-        {"LD (HL), 0x%02X",         1, 3, LDHLmn},    // 0x36
+        {"LD (HL), 0x{:02X}",       1, 3, LDHLmn},    // 0x36
         {"SCF",                     0, 1, SCF},       // 0x37
-        {"JR C, 0x%02X",            1, 2, JRCn},      // 0x38
+        {"JR C, 0x{:02X}",          1, 2, JRCn},      // 0x38
         {"ADD HL, SP",              0, 2, ADDHLSP},   // 0x39
         {"LDD A, (HL)",             0, 2, LDAHLD},    // 0x3a
         {"DEC SP",                  0, 2, DECSP},     // 0x3b
         {"INC A",                   0, 1, INCr_a},    // 0x3c
         {"DEC A",                   0, 1, DECr_a},    // 0x3d
-        {"LD A, 0x%02X",            1, 2, LDrn_a},    // 0x3e
+        {"LD A, 0x{:02X}",          1, 2, LDrn_a},    // 0x3e
         {"CCF",                     0, 1, CCF},       // 0x3f
         {"LD B, B",                 0, 1, LDrr_bb},   // 0x40
         {"LD B, C",                 0, 1, LDrr_bc},   // 0x41
@@ -1103,67 +1103,67 @@ Emu::Cpu::Ops::Op Emu::Cpu::Ops::opTable[256] = {
         {"CP A",                    0, 1, CPr_a},     // 0xbf
         {"RET NZ",                  0, 2, RETNZ},     // 0xc0
         {"POP BC",                  0, 3, POPBC},     // 0xc1
-        {"JP NZ, 0x%04X",           2, 3, JPNZnn},    // 0xc2
-        {"JP 0x%04X",               2, 4, JPnn},      // 0xc3
-        {"CALL NZ, 0x%04X",         2, 3, CALLNZnn},  // 0xc4
+        {"JP NZ, 0x{:04X}",         2, 3, JPNZnn},    // 0xc2
+        {"JP 0x{:04X}",             2, 4, JPnn},      // 0xc3
+        {"CALL NZ, 0x{:04X}",       2, 3, CALLNZnn},  // 0xc4
         {"PUSH BC",                 0, 4, PUSHBC},    // 0xc5
-        {"ADD A, 0x%02X",           1, 2, ADDn},      // 0xc6
+        {"ADD A, 0x{:02X}",         1, 2, ADDn},      // 0xc6
         {"RST 0x00",                0, 4, RST00},     // 0xc7
         {"RET Z",                   0, 2, RETZ},      // 0xc8
         {"RET",                     0, 4, RET},       // 0xc9
-        {"JP Z, 0x%04X",            2, 3, JPZnn},     // 0xca
+        {"JP Z, 0x{:04X}",          2, 3, JPZnn},     // 0xca
         {"CB %s",                   1, 1, MAPcb},     // 0xcb
-        {"CALL Z, 0x%04X",          2, 3, CALLZnn},   // 0xcc
-        {"CALL 0x%04X",             2, 6, CALLnn},    // 0xcd
-        {"ADC 0x%02X",              1, 2, ADCn},      // 0xce
+        {"CALL Z, 0x{:04X}",        2, 3, CALLZnn},   // 0xcc
+        {"CALL 0x{:04X}",           2, 6, CALLnn},    // 0xcd
+        {"ADC 0x{:02X}",            1, 2, ADCn},      // 0xce
         {"RST 0x08",                0, 4, RST08},     // 0xcf
         {"RET NC",                  0, 2, RETNC},     // 0xd0
         {"POP DE",                  0, 3, POPDE},     // 0xd1
-        {"JP NC, 0x%04X",           2, 3, JPNCnn},    // 0xd2
+        {"JP NC, 0x{:04X}",         2, 3, JPNCnn},    // 0xd2
         {"UNKNOWN",                 0, 0, XX},        // 0xd3
-        {"CALL NC, 0x%04X",         2, 3, CALLNCnn},  // 0xd4
+        {"CALL NC, 0x{:04X}",       2, 3, CALLNCnn},  // 0xd4
         {"PUSH DE",                 0, 4, PUSHDE},    // 0xd5
-        {"SUB 0x%02X",              1, 2, SUBn},      // 0xd6
+        {"SUB 0x{:02X}",            1, 2, SUBn},      // 0xd6
         {"RST 0x10",                0, 4, RST10},     // 0xd7
         {"RET C",                   0, 2, RETC},      // 0xd8
         {"RETI",                    0, 4, RETI},      // 0xd9
-        {"JP C, 0x%04X",            2, 3, JPCnn},     // 0xda
+        {"JP C, 0x{:04X}",          2, 3, JPCnn},     // 0xda
         {"UNKNOWN",                 0, 0, XX},        // 0xdb
-        {"CALL C, 0x%04X",          2, 3, CALLCnn},  // 0xdc
+        {"CALL C, 0x{:04X}",        2, 3, CALLCnn},  // 0xdc
         {"UNKNOWN",                 0, 0, XX},        // 0xdd
-        {"SBC 0x%02X",              1, 2, SBCn},      // 0xde
+        {"SBC 0x{:02X}",            1, 2, SBCn},      // 0xde
         {"RST 0x18",                0, 4, RST18},     // 0xdf
-        {"LD (0xFF00 + 0x%02X), A", 1, 3, LDIOnA},    // 0xe0
+        {"LD (0xFF00 + 0x{:02X}), A", 1, 3, LDIOnA},    // 0xe0
         {"POP HL",                  0, 3, POPHL},     // 0xe1
         {"LD (0xFF00 + C), A",      0, 2, LDIOCA},    // 0xe2
         {"UNKNOWN",                 0, 0, XX},        // 0xe3
         {"UNKNOWN",                 0, 0, XX},        // 0xe4
         {"PUSH HL",                 0, 4, PUSHHL},    // 0xe5
-        {"AND 0x%02X",              1, 2, ANDn},      // 0xe6
+        {"AND 0x{:02X}",            1, 2, ANDn},      // 0xe6
         {"RST 0x20",                0, 4, RST20},     // 0xe7
-        {"ADD SP,0x%02X",           1, 4, ADDSPn},    // 0xe8
+        {"ADD SP,0x{:02X}",         1, 4, ADDSPn},    // 0xe8
         {"JP HL",                   0, 1, JPHL},      // 0xe9
-        {"LD (0x%04X), A",          2, 4, LDmmA},     // 0xea
+        {"LD (0x{:04X}), A",        2, 4, LDmmA},     // 0xea
         {"UNKNOWN",                 0, 0, XX},        // 0xeb
         {"UNKNOWN",                 0, 0, XX},        // 0xec
         {"UNKNOWN",                 0, 0, XX},        // 0xed
-        {"XOR 0x%02X",              1, 2, XORn},      // 0xee
+        {"XOR 0x{:02X}",            1, 2, XORn},      // 0xee
         {"RST 0x28",                0, 4, RST28},     // 0xef
-        {"LD A, (0xFF00 + 0x%02X)", 1, 3, LDAIOn},    // 0xf0
+        {"LD A, (0xFF00 + 0x{:02X})", 1, 3, LDAIOn},    // 0xf0
         {"POP AF",                  0, 3, POPAF},     // 0xf1
         {"LD A, (0xFF00 + C)",      0, 2, LDAIOC},    // 0xf2
         {"DI",                      0, 1, DI},        // 0xf3
         {"UNKNOWN",                 0, 0, XX},        // 0xf4
         {"PUSH AF",                 0, 4, PUSHAF},    // 0xf5
-        {"OR 0x%02X",               1, 2, ORn},       // 0xf6
+        {"OR 0x{:02X}",             1, 2, ORn},       // 0xf6
         {"RST 0x30",                0, 4, RST30},     // 0xf7
-        {"LD HL, SP+0x%02X",        1, 3, LDHLSPn},   // 0xf8
+        {"LD HL, SP+0x{:02X}",      1, 3, LDHLSPn},   // 0xf8
         {"LD SP, HL",               0, 2, LDSPHL},    // 0xf9
-        {"LD A, (0x%04X)",          2, 4, LDAmm},     // 0xfa
+        {"LD A, (0x{:04X})",        2, 4, LDAmm},     // 0xfa
         {"EI",                      0, 1, EI},        // 0xfb
         {"UNKNOWN",                 0, 0, XX},        // 0xfc
         {"UNKNOWN",                 0, 0, XX},        // 0xfd
-        {"CP 0x%02X",               1, 2, CPn},       // 0xfe
+        {"CP 0x{:02X}",             1, 2, CPn},       // 0xfe
         {"RST 0x38",                0, 4, RST38},     // 0xff
 };
 

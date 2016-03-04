@@ -10,7 +10,7 @@
 class Emu::Cpu::Ops {
 public:
     struct Op {
-        char desc[40];
+        std::string desc;
         uint8_t argsize;
         uint8_t m;
 

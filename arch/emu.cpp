@@ -7,6 +7,7 @@
 #include "mmu.h"
 #include "gpu.h"
 #include "joy.h"
+#include "../cppformat/format.h"
 
 Emu::Emu() {
     window = new sf::RenderWindow(sf::VideoMode(400, 300), "C-Boy");
@@ -77,17 +78,15 @@ void Emu::run() {
         }
         window->clear(sf::Color::Black);
         runFrame();
-        text.setString(getFpsString() + "\n" + cpu->regnop);
+        text.setString(getFpsString() + "\n" + cpu->getRegString());
         window->draw(text);
         window->display();
     }
 }
 
 std::string Emu::getFpsString() {
-    char buf[100];
     double fps = 1000000.f / fpsClock.restart().asMicroseconds();
     avgFps = ((frameCounter - 1) * avgFps + fps) / frameCounter;
     frameCounter++;
-    snprintf(buf, 100, "FPS: %f\nAvg FPS: %f", fps, avgFps);
-    return std::string(buf);
+    return fmt::format("FPS: {:.2f}\nAvg FPS: {:.2f}", fps, avgFps);;
 }
