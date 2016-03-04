@@ -34,52 +34,54 @@ void Emu::Joy::keyReleased(sf::Event::KeyEvent key) {
         }
     }
 }
-//
-//void Emu::Joy::keyPressed(sf::Event::JoystickButtonEvent key) {
-//    for (int i = 0; i < 8; i++) {
-//        Settings::ButtonConfig button = emu->settings->buttonConfiguration[i];
-//        sf::Joystick::Identification id = sf::Joystick::getIdentification(key.joystickId);
-//        if(button.vid == id.vendorId &&
-//                button.pid == id.productId &&
-//                button.axis == -1 &&
-//                button.axisSign == -1 &&
-//                button.button == key.button) {
-//            gbKeyPressed((Settings::GbButton)i);
-//        }
-//    }
-//}
-//
-//void Emu::Joy::keyReleased(sf::Event::JoystickButtonEvent key) {
-//    for (int i = 0; i < 8; i++) {
-//        Settings::ButtonConfig button = emu->settings->buttonConfiguration[i];
-//        sf::Joystick::Identification id = sf::Joystick::getIdentification(key.joystickId);
-//        if(button.vid == id.vendorId &&
-//           button.pid == id.productId &&
-//           button.axis == -1 &&
-//           button.axisSign == -1 &&
-//           button.button == key.button) {
-//            gbKeyReleased((Settings::GbButton)i);
-//        }
-//    }
-//}
-//
-//void Emu::Joy::keyPressed(sf::Event::JoystickMoveEvent key) {
-////    for (int i = 0; i < 8; i++) {
-////        Settings::ButtonConfig button = emu->settings->buttonConfiguration[i];
-////        sf::Joystick::Identification id = sf::Joystick::getIdentification(key.joystickId);
-////        if(button.vid == id.vendorId &&
-////           button.pid == id.productId &&
-////           button.axis == key.axis &&
-////           button.axisSign == key.position &&
-////           button.button == key.button) {
-////            gbKeyPressed((Settings::GbButton)i);
-////        }
-////    }
-//}
-//
-//void Emu::Joy::keyReleased(sf::Event::JoystickMoveEvent key) {
-//
-//}
+
+void Emu::Joy::keyPressed(sf::Event::JoystickButtonEvent key) {
+    for (int i = 0; i < 8; i++) {
+        Settings::ButtonConfig button = emu->settings->buttonConfiguration[i];
+        sf::Joystick::Identification id = sf::Joystick::getIdentification(key.joystickId);
+        if(button.vid == id.vendorId &&
+                button.pid == id.productId &&
+                button.axis == -1 &&
+                button.axisSign == -1 &&
+                button.button == key.button) {
+            gbKeyPressed((Settings::GbButton)i);
+        }
+    }
+}
+
+void Emu::Joy::keyReleased(sf::Event::JoystickButtonEvent key) {
+    for (int i = 0; i < 8; i++) {
+        Settings::ButtonConfig button = emu->settings->buttonConfiguration[i];
+        sf::Joystick::Identification id = sf::Joystick::getIdentification(key.joystickId);
+        if(button.vid == id.vendorId &&
+           button.pid == id.productId &&
+           button.axis == -1 &&
+           button.axisSign == -1 &&
+           button.button == key.button) {
+            gbKeyReleased((Settings::GbButton)i);
+        }
+    }
+}
+
+void Emu::Joy::axisMove(sf::Event::JoystickMoveEvent key){
+    for (int i = 0; i < 8; i++) {
+        Settings::ButtonConfig button = emu->settings->buttonConfiguration[i];
+        sf::Joystick::Identification id = sf::Joystick::getIdentification(key.joystickId);
+        int sign = ((key.position > 0) ? 1 : -1);
+        if(button.vid == id.vendorId &&
+           button.pid == id.productId &&
+           button.axis == key.axis &&
+           button.button == -1 &&
+           button.axisSign == sign) {
+            if(abs(key.position) > 50) {
+                gbKeyPressed((Settings::GbButton) i);
+            } else {
+                gbKeyReleased((Settings::GbButton) i);
+            }
+        }
+    }
+}
+
 
 void Emu::Joy::gbKeyPressed(Settings::GbButton key) {
     bool prevPressed = false;

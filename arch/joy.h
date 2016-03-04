@@ -16,8 +16,8 @@ public:
     void keyPressed(sf::Event::JoystickButtonEvent key);
     void keyReleased(sf::Event::JoystickButtonEvent key);
 
-    void keyPressed(sf::Event::JoystickMoveEvent key);
-    void keyReleased(sf::Event::JoystickMoveEvent key);
+    void axisMove(sf::Event::JoystickMoveEvent key);
+    //void keyReleased(sf::Event::JoystickMoveEvent key);
 
     void gbKeyPressed(Settings::GbButton);
     void gbKeyReleased(Settings::GbButton);

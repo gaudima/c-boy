@@ -66,6 +66,14 @@ void Emu::run() {
             } else if(event.type == sf::Event::KeyReleased) {
                 joy->keyReleased(event.key);
             }
+            if(event.type == sf::Event::JoystickButtonPressed) {
+                joy->keyPressed(event.joystickButton);
+            } else if(event.type == sf::Event::JoystickButtonReleased) {
+                joy->keyReleased(event.joystickButton);
+            }
+            if(event.type == sf::Event::JoystickMoved) {
+                joy->axisMove(event.joystickMove);
+            }
         }
         window->clear(sf::Color::Black);
         runFrame();

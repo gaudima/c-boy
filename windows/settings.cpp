@@ -21,6 +21,7 @@ Settings::Settings() {
     visualSettings.scaleFactor = 1;
     visualSettings.enableAA = false;
     visualSettings.enableDebug = true;
+    buttonToConfigure = -1;
     loadFromFile();
 }
 
@@ -159,10 +160,10 @@ void Settings::open() {
             if(event.type == sf::Event::JoystickMoved) {
                 if(std::abs(event.joystickMove.position) > 5) {
                     std::cout << "jm" << std::endl;
+                    std::cout << "joystick axis: " << (event.joystickMove.axis == sf::Joystick::PovX) << " : " << event.joystickMove.position << std::endl;
                     sf::Joystick::Identification id = sf::Joystick::getIdentification(
                             event.joystickButton.joystickId);
                     if (buttonToConfigure > -1) {
-                        std::cout << "joystick axis: " << event.joystickMove.axis << std::endl;
                         buttonConfiguration[buttonToConfigure].axis = event.joystickMove.axis;
                         buttonConfiguration[buttonToConfigure].axisSign = (event.joystickMove.position > 0) ? 1 : -1;
                         buttonConfiguration[buttonToConfigure].vid = id.vendorId;
