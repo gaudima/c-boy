@@ -64,13 +64,13 @@ void Emu::Gpu::renderScreen() {
     screenSprite.setTexture(screenTex);
     float scale = emu->settings->visualSettings.scaleFactor;
     screenSprite.setScale(scale, scale);
-    float scaledWidth = std::max(400.f, std::ceil(160.f * scale));
-    float scaledHeight = std::max(300.f, std::ceil(144.f * scale));
+    float scaledWidth = std::ceil(160.f * scale);
+    float scaledHeight = std::ceil(144.f * scale) + 19;
     view.setCenter(scaledWidth / 2, scaledHeight / 2);
     view.setSize(scaledWidth, scaledHeight);
     emu->window->setView(view);
     emu->window->setSize(sf::Vector2u((int)scaledWidth, (int)scaledHeight));
-    screenSprite.setPosition(emu->window->getSize().x - 160 * scale, 0);
+    screenSprite.setPosition(0, 19);
     emu->window->draw(screenSprite);
     //emu->window->display();
 }

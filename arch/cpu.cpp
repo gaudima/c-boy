@@ -33,7 +33,7 @@ void Emu::Cpu::reset() {
     r.ime = 0;
     halt = 0;
 
-    paused = true;
+    paused = false;
     std::cout << "Cpu: Reset" << std::endl;
 }
 

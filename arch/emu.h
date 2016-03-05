@@ -8,6 +8,7 @@
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include "../windows/settings.h"
+#include "../windows/filedialog.h"
 
 class Emu {
 public:
@@ -23,6 +24,8 @@ public:
 
     ~Emu();
 
+    void initImGui();
+
     void run();
 
     void runFrame();
@@ -30,9 +33,16 @@ public:
     void loadRom(std::string rom);
 
 private:
-    std::string getFpsString();
+    std::string getFpsTitleString();
+
+    void displayDebugInfo();
+
+    void drawMenuBar();
 
     sf::Clock fpsClock;
+    sf::Font debugFont;
+    sf::Text debugText;
+    sf::RectangleShape debugFrame;
     size_t frameCounter;
     double avgFps;
     sf::RenderWindow *window;

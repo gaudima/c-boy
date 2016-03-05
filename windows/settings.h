@@ -5,6 +5,8 @@
 #ifndef C_BOY_SETTINGS_H
 #define C_BOY_SETTINGS_H
 #include <string>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/Event.hpp>
 
 class Settings {
 public:
@@ -33,8 +35,11 @@ public:
     };
     VisualSettings visualSettings;
     Settings();
-    void open();
+    bool open;
+    void draw(sf::RenderWindow *window);
+    void processEvent(sf::Event event);
 private:
+    sf::View view;
     enum CurrentWindow {
         Controls,
         Visuals

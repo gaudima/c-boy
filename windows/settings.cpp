@@ -12,13 +12,14 @@
 
 Settings::Settings() {
     currentWindow = Controls;
+    open = false;
     for(int i = 0; i < 8; i++) {
         buttonConfiguration[i].button = -1;
         buttonConfiguration[i].axis = -1;
         buttonConfiguration[i].vid = 0;
         buttonConfiguration[i].pid = 0;
     }
-    visualSettings.scaleFactor = 1;
+    visualSettings.scaleFactor = 2;
     visualSettings.enableAA = false;
     visualSettings.enableDebug = true;
     buttonToConfigure = -1;
@@ -108,89 +109,35 @@ void Settings::drawVisualsWindow() {
     ImGui::AlignFirstTextHeightToWidgets();
     ImGui::Text("ScaleFactor:");
     ImGui::SameLine();
-    float factorForIndex[5] = {1, 1.5, 2, 2.5, 3};
+    float factorForIndex[5] = {2, 2.5, 3, 3.5, 4};
     int index;
-    if(visualSettings.scaleFactor == 1) {
+    if(visualSettings.scaleFactor == 2) {
         index = 0;
-    } else if(visualSettings.scaleFactor == 1.5) {
-        index = 1;
-    } else if(visualSettings.scaleFactor == 2) {
-        index = 2;
     } else if(visualSettings.scaleFactor == 2.5) {
-        index = 3;
+        index = 1;
     } else if(visualSettings.scaleFactor == 3) {
+        index = 2;
+    } else if(visualSettings.scaleFactor == 3.5) {
+        index = 3;
+    } else if(visualSettings.scaleFactor == 4) {
         index = 4;
     }
-    if(ImGui::Combo("", &index, "x1\0x1.5\0x2\0x2.5\0x3")) {
+    if(ImGui::Combo("", &index, "x2\0x2.5\0x3\0x3.5\0x4")) {
         visualSettings.scaleFactor = factorForIndex[index];
     }
     ImGui::Checkbox("Enable antialiasing", &visualSettings.enableAA);
     ImGui::Checkbox("Enable debug mode", &visualSettings.enableDebug);
 }
 
-void Settings::open() {
-    sf::RenderWindow window(sf::VideoMode(400, 300), "Settings", sf::Style::Default & ~sf::Style::Resize);
-    window.setFramerateLimit(60);
-    ImGui::SFML::SetRenderTarget(window);
-    ImGui::SFML::InitImGuiRendering();
-    ImGui::SFML::SetWindow(window);
-    ImGui::SFML::InitImGuiEvents();
-    while(window.isOpen()) {
-        ImGui::SFML::UpdateImGui();
-        ImGui::SFML::UpdateImGuiRendering();
-        sf::Event event;
-        while(window.pollEvent(event)) {
-            ImGui::SFML::ProcessEvent(event);
-            if(event.type == sf::Event::Closed) {
-                window.close();
-            }
-            if(event.type == sf::Event::JoystickButtonPressed) {
-                std::cout << "bp" << std::endl;
-                sf::Joystick::Identification id = sf::Joystick::getIdentification(event.joystickButton.joystickId);
-                if(buttonToConfigure > -1) {
-                    std::cout << "joystick button: " << event.joystickButton.button << std::endl;
-                    buttonConfiguration[buttonToConfigure].button = event.joystickButton.button;
-                    buttonConfiguration[buttonToConfigure].axis = -1;
-                    buttonConfiguration[buttonToConfigure].axisSign = -1;
-                    buttonConfiguration[buttonToConfigure].vid = id.vendorId;
-                    buttonConfiguration[buttonToConfigure].pid = id.productId;
-                    buttonToConfigure = -1;
-                }
-            }
-            if(event.type == sf::Event::JoystickMoved) {
-                if(std::abs(event.joystickMove.position) > 5) {
-                    std::cout << "jm" << std::endl;
-                    std::cout << "joystick axis: " << (event.joystickMove.axis == sf::Joystick::PovX) << " : " << event.joystickMove.position << std::endl;
-                    sf::Joystick::Identification id = sf::Joystick::getIdentification(
-                            event.joystickButton.joystickId);
-                    if (buttonToConfigure > -1) {
-                        buttonConfiguration[buttonToConfigure].axis = event.joystickMove.axis;
-                        buttonConfiguration[buttonToConfigure].axisSign = (event.joystickMove.position > 0) ? 1 : -1;
-                        buttonConfiguration[buttonToConfigure].vid = id.vendorId;
-                        buttonConfiguration[buttonToConfigure].pid = id.productId;
-                        buttonConfiguration[buttonToConfigure].button = -1;
-                        buttonToConfigure = -1;
-                    }
-                }
-            }
-            if(event.type == sf::Event::KeyPressed) {
-                if(buttonToConfigure > -1) {
-                    buttonConfiguration[buttonToConfigure].button = event.key.code;
-                    buttonConfiguration[buttonToConfigure].axis = -1;
-                    buttonConfiguration[buttonToConfigure].axisSign = -1;
-                    buttonConfiguration[buttonToConfigure].vid = 0;
-                    buttonConfiguration[buttonToConfigure].pid = 0;
-                    buttonToConfigure = -1;
-                }
-            }
-        }
-        ImGuiIO &io = ImGui::GetIO();
+void Settings::draw(sf::RenderWindow *window) {
+    if(open) {
         bool tmp = true;
-        ImGui::SetNextWindowSize(ImVec2(400, 300));
+        sf::Vector2u size = window->getSize();
+        ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
         ImGui::SetNextWindowPos(ImVec2(0,0));
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::Begin("Controls", &tmp, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar);
+                                       ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar);
 
         if(ImGui::BeginMenuBar()) {
             if(ImGui::Button("Controls")) {
@@ -199,6 +146,11 @@ void Settings::open() {
             ImGui::SameLine();
             if(ImGui::Button("Visuals")) {
                 currentWindow = Visuals;
+            }
+            ImGui::SameLine(ImGui::GetWindowWidth() - 20);
+            if(ImGui::Button("X")) {
+                saveToFile();
+                open = false;
             }
             ImGui::EndMenuBar();
         }
@@ -209,11 +161,51 @@ void Settings::open() {
         }
         ImGui::End();
         ImGui::PopStyleVar();
-        window.clear(sf::Color::Red);
+        window->clear(sf::Color::Red);
         ImGui::Render();
-        window.display();
     }
-    //std::cout << "here" <<std::endl;
-    saveToFile();
-    ImGui::SFML::Shutdown();
+}
+
+void Settings::processEvent(sf::Event event) {
+    if(open) {
+        if(event.type == sf::Event::JoystickButtonPressed) {
+            std::cout << "bp" << std::endl;
+            sf::Joystick::Identification id = sf::Joystick::getIdentification(event.joystickButton.joystickId);
+            if(buttonToConfigure > -1) {
+                std::cout << "joystick button: " << event.joystickButton.button << std::endl;
+                buttonConfiguration[buttonToConfigure].button = event.joystickButton.button;
+                buttonConfiguration[buttonToConfigure].axis = -1;
+                buttonConfiguration[buttonToConfigure].axisSign = -1;
+                buttonConfiguration[buttonToConfigure].vid = id.vendorId;
+                buttonConfiguration[buttonToConfigure].pid = id.productId;
+                buttonToConfigure = -1;
+            }
+        }
+        if(event.type == sf::Event::JoystickMoved) {
+            if(std::abs(event.joystickMove.position) > 5) {
+                std::cout << "jm" << std::endl;
+                std::cout << "joystick axis: " << (event.joystickMove.axis == sf::Joystick::PovX) << " : " << event.joystickMove.position << std::endl;
+                sf::Joystick::Identification id = sf::Joystick::getIdentification(
+                        event.joystickButton.joystickId);
+                if (buttonToConfigure > -1) {
+                    buttonConfiguration[buttonToConfigure].axis = event.joystickMove.axis;
+                    buttonConfiguration[buttonToConfigure].axisSign = (event.joystickMove.position > 0) ? 1 : -1;
+                    buttonConfiguration[buttonToConfigure].vid = id.vendorId;
+                    buttonConfiguration[buttonToConfigure].pid = id.productId;
+                    buttonConfiguration[buttonToConfigure].button = -1;
+                    buttonToConfigure = -1;
+                }
+            }
+        }
+        if(event.type == sf::Event::KeyPressed) {
+            if(buttonToConfigure > -1) {
+                buttonConfiguration[buttonToConfigure].button = event.key.code;
+                buttonConfiguration[buttonToConfigure].axis = -1;
+                buttonConfiguration[buttonToConfigure].axisSign = -1;
+                buttonConfiguration[buttonToConfigure].vid = 0;
+                buttonConfiguration[buttonToConfigure].pid = 0;
+                buttonToConfigure = -1;
+            }
+        }
+    }
 }
