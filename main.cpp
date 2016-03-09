@@ -5,8 +5,8 @@
 #include "windows/settings.h"
 using namespace std;
 
-int main() {
-    Emu emu;
+int main(int argc, char **argv) {
+    Emu emu(argv[0]);
     emu.run();
     return 0;
 }

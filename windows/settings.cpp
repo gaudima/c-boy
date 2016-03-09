@@ -7,12 +7,16 @@
 #include "../imgui/imgui-events-SFML.h"
 #include "../imgui/imgui-rendering-SFML.h"
 #include "../jsoncpp/json/json.h"
-#include <SFML/Graphics.hpp>
+#include "../arch/cpu.h"
+#include "../cppformat/format.h"
 #include <fstream>
 
-Settings::Settings() {
+Emu::Settings::Settings(Emu *emu) {
+    this->emu = emu;
+    controlsColor = ImVec4(0.09, 0.0, 0.0, 1.0);
+    visualsColor = ImGui::GetStyle().Colors[ImGuiCol_Button];
     currentWindow = Controls;
-    open = false;
+    isOpen = false;
     for(int i = 0; i < 8; i++) {
         buttonConfiguration[i].button = -1;
         buttonConfiguration[i].axis = -1;
@@ -22,11 +26,12 @@ Settings::Settings() {
     visualSettings.scaleFactor = 2;
     visualSettings.enableAA = false;
     visualSettings.enableDebug = true;
+    visualSettings.ffSpeed = 300;
     buttonToConfigure = -1;
     loadFromFile();
 }
 
-void Settings::loadFromFile() {
+void Emu::Settings::loadFromFile() {
     std::ifstream in("settings.json", std::ios::binary);
     if(!in.good()) {
         in.close();
@@ -43,11 +48,12 @@ void Settings::loadFromFile() {
         buttonConfiguration[i].axisSign = root["controls"][i]["axisSign"].asInt();
     }
     visualSettings.scaleFactor = root["visuals"]["scaleFactor"].asFloat();
+    visualSettings.ffSpeed = root["visuals"]["ffSpeed"].asInt();
     visualSettings.enableAA = root["visuals"]["enableAA"].asBool();
     visualSettings.enableDebug = root["visuals"]["enableDebug"].asBool();
 }
 
-void Settings::saveToFile() {
+void Emu::Settings::saveToFile() {
     std::ofstream out("settings.json", std::ios::binary);
     Json::Value root;
     for(int i = 0; i < 8; i++) {
@@ -60,37 +66,38 @@ void Settings::saveToFile() {
     root["visuals"]["scaleFactor"] = visualSettings.scaleFactor;
     root["visuals"]["enableAA"] = visualSettings.enableAA;
     root["visuals"]["enableDebug"] = visualSettings.enableDebug;
+    root["visuals"]["ffSpeed"] = visualSettings.ffSpeed;
     out << root;
     out.close();
 }
 
-void Settings::drawConfigButton(const char *name, GbButton button) {
+void Emu::Settings::drawConfigButton(const char *name, GbButton button) {
+    ImGui::AlignFirstTextHeightToWidgets();
     ImGui::Text(name);
     ImGui::SameLine();
-    char buttonText[50];
-    char deviceName[20];
+    std::string buttonText;
+    std::string deviceName;
     if(buttonConfiguration[button].vid == 0 && buttonConfiguration[button].pid == 0) {
-        sprintf(deviceName, "Kbd");
+        deviceName = "Kbd";
     } else {
-        sprintf(deviceName, "Joy%Xx%X", buttonConfiguration[button].vid, buttonConfiguration[button].pid);
+        deviceName = fmt::format("Joy{:X}x{:X}", buttonConfiguration[button].vid, buttonConfiguration[button].pid);
     }
     if(buttonConfiguration[button].button == -1 && buttonConfiguration[button].axis == -1) {
-        sprintf(buttonText, "Press to assign");
+        buttonText = "Press to assign";
     } else if(buttonConfiguration[button].axis > -1) {
-        sprintf(buttonText, "%s_Axis: %d%s", deviceName, buttonConfiguration[button].axis,
+        buttonText = fmt::format("{}_Axis: {}{}", deviceName, buttonConfiguration[button].axis,
                 (buttonConfiguration[button].axisSign > 0) ? "+" : "-");
     } else if(buttonConfiguration[button].button > -1) {
-        sprintf(buttonText, "%s_Button: %d", deviceName, buttonConfiguration[button].button);
+        buttonText = fmt::format("{}_Button: {}", deviceName, buttonConfiguration[button].button);
     }
     ImGui::PushID(button);
-    if(ImGui::Button(buttonText)) {
+    if(ImGui::Button(buttonText.c_str())) {
         buttonToConfigure = button;
     }
     ImGui::PopID();
 }
 
-void Settings::drawControlsWindow() {
-    ImGui::BeginChild("child0", ImVec2(0, 0), true);
+void Emu::Settings::drawControlsWindow() {
     ImGui::Text("Button Mapping:");
     ImGui::BeginChild("child1", ImVec2(0, 0), true);
     drawConfigButton("Dpad Up:       ", Dpad_Up);
@@ -102,12 +109,11 @@ void Settings::drawControlsWindow() {
     drawConfigButton("Button Select: ", Button_Select);
     drawConfigButton("Button Start:  ", Button_Start);
     ImGui::EndChild();
-    ImGui::EndChild();
 }
 
-void Settings::drawVisualsWindow() {
+void Emu::Settings::drawVisualsWindow() {
     ImGui::AlignFirstTextHeightToWidgets();
-    ImGui::Text("ScaleFactor:");
+    ImGui::Text("Scale factor:");
     ImGui::SameLine();
     float factorForIndex[5] = {2, 2.5, 3, 3.5, 4};
     int index;
@@ -122,17 +128,34 @@ void Settings::drawVisualsWindow() {
     } else if(visualSettings.scaleFactor == 4) {
         index = 4;
     }
+    ImGui::PushItemWidth(-1);
     if(ImGui::Combo("", &index, "x2\0x2.5\0x3\0x3.5\0x4")) {
         visualSettings.scaleFactor = factorForIndex[index];
     }
+    ImGui::AlignFirstTextHeightToWidgets();
+    ImGui::Text("Fast forward speed:");
+    ImGui::SameLine();
+    ImGui::PushItemWidth(-1);
+    ImGui::SliderInt("", &visualSettings.ffSpeed, 150, 500, "%.0f%%");
     ImGui::Checkbox("Enable antialiasing", &visualSettings.enableAA);
     ImGui::Checkbox("Enable debug mode", &visualSettings.enableDebug);
 }
 
-void Settings::draw(sf::RenderWindow *window) {
-    if(open) {
+void Emu::Settings::open() {
+    cpuPauseSave = emu->cpu->paused;
+    emu->cpu->paused = true;
+    isOpen = true;
+}
+
+void Emu::Settings::close() {
+    isOpen = false;
+    emu->cpu->paused = cpuPauseSave;
+}
+
+void Emu::Settings::draw() {
+    if(isOpen) {
         bool tmp = true;
-        sf::Vector2u size = window->getSize();
+        sf::Vector2u size = emu->window->getSize();
         ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
         ImGui::SetNextWindowPos(ImVec2(0,0));
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
@@ -140,17 +163,26 @@ void Settings::draw(sf::RenderWindow *window) {
                                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar);
 
         if(ImGui::BeginMenuBar()) {
+            ImVec4 btnCol = ImGui::GetStyle().Colors[ImGuiCol_Button];
+            ImGui::PushStyleColor(ImGuiCol_Button, controlsColor);
             if(ImGui::Button("Controls")) {
                 currentWindow = Controls;
+                controlsColor = ImVec4(0.09, 0.0, 0.0, 1.0);
+                visualsColor = btnCol;
             }
+            ImGui::PopStyleColor(1);
             ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Button, visualsColor);
             if(ImGui::Button("Visuals")) {
                 currentWindow = Visuals;
+                visualsColor = ImVec4(0.09, 0.0, 0.0, 1.0);
+                controlsColor = btnCol;
             }
+            ImGui::PopStyleColor(1);
             ImGui::SameLine(ImGui::GetWindowWidth() - 20);
             if(ImGui::Button("X")) {
                 saveToFile();
-                open = false;
+                close();
             }
             ImGui::EndMenuBar();
         }
@@ -161,13 +193,13 @@ void Settings::draw(sf::RenderWindow *window) {
         }
         ImGui::End();
         ImGui::PopStyleVar();
-        window->clear(sf::Color::Red);
+        emu->window->clear(sf::Color::Red);
         ImGui::Render();
     }
 }
 
-void Settings::processEvent(sf::Event event) {
-    if(open) {
+void Emu::Settings::processEvent(sf::Event event) {
+    if(isOpen) {
         if(event.type == sf::Event::JoystickButtonPressed) {
             std::cout << "bp" << std::endl;
             sf::Joystick::Identification id = sf::Joystick::getIdentification(event.joystickButton.joystickId);

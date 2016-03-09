@@ -5,10 +5,12 @@
 #include "gpu.h"
 #include "mmu.h"
 #include "cpu.h"
+#include "../windows/settings.h"
 
 Emu::Gpu::Gpu(Emu *emu) : view(sf::FloatRect(0, 0, 400, 300)) {
     this->emu = emu;
     reset();
+    drawSplashScreen();
 }
 
 void Emu::Gpu::reset() {
@@ -29,6 +31,23 @@ void Emu::Gpu::reset() {
     colors[1] = sf::Color(192, 192, 192, 255);
     colors[2] = sf::Color(96, 96, 96, 255);
     colors[3] = sf::Color(0, 0, 0, 255);
+}
+
+void Emu::Gpu::drawSplashScreen() {
+    int x = 34;
+    int y = 54;
+    for(int i = 0; i < 344; i++) {
+        for(int j = 0; j < (splashScreen[i] & 0x7F); j++) {
+            if(splashScreen[i] & 0x80) {
+                screen.setPixel(x, y, sf::Color::Black);
+            }
+            x++;
+            if(x == 126) {
+                x = 34;
+                y++;
+            }
+        }
+    }
 }
 
 void Emu::Gpu::readGpuData() {
@@ -65,12 +84,12 @@ void Emu::Gpu::renderScreen() {
     float scale = emu->settings->visualSettings.scaleFactor;
     screenSprite.setScale(scale, scale);
     float scaledWidth = std::ceil(160.f * scale);
-    float scaledHeight = std::ceil(144.f * scale) + 19;
+    float scaledHeight = std::ceil(144.f * scale) + 20;
     view.setCenter(scaledWidth / 2, scaledHeight / 2);
     view.setSize(scaledWidth, scaledHeight);
     emu->window->setView(view);
     emu->window->setSize(sf::Vector2u((int)scaledWidth, (int)scaledHeight));
-    screenSprite.setPosition(0, 19);
+    screenSprite.setPosition(0, 20);
     emu->window->draw(screenSprite);
     //emu->window->display();
 }

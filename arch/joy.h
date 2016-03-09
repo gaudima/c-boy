@@ -6,21 +6,15 @@
 #define C_BOY_JOY_H
 
 #include "emu.h"
+#include "../windows/settings.h"
 
 class Emu::Joy {
 public:
     Joy(Emu *emu);
-    void keyPressed(sf::Event::KeyEvent key);
-    void keyReleased(sf::Event::KeyEvent key);
 
-    void keyPressed(sf::Event::JoystickButtonEvent key);
-    void keyReleased(sf::Event::JoystickButtonEvent key);
+    void updateJoypad();
 
-    void axisMove(sf::Event::JoystickMoveEvent key);
-    //void keyReleased(sf::Event::JoystickMoveEvent key);
-
-    void gbKeyPressed(Settings::GbButton);
-    void gbKeyReleased(Settings::GbButton);
+    void setGbKeyState(Emu::Settings::GbButton, bool pressed);
 
     uint8_t getJoypadState();
 

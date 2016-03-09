@@ -45,6 +45,9 @@ void Emu::Mmu::reset() {
     //mmio = Mmu::ram + 0xFF00;
     //zram = Mmu::ram + 0xFF80;
 
+    if(mbc != NULL) {
+        delete mbc;
+    }
     mbc = NULL;
     for(int i = 0; i < 0xFFFF; i++) {
         ram[i] = 0;
@@ -144,7 +147,7 @@ void Emu::Mmu::loadRom(std::string filename) {
     in.seekg(0, std::ios::beg);
     in.read((char*)fullRom, romSize);
     in.close();
-    uint8_t ramBanks = fullRom[0x0148];
+    uint8_t ramBanks = fullRom[0x0149];
     switch(fullRom[0x0147]) {
         case 0:
             mbc = new NoMbc(fullRom, romSize / 0x4000, new uint8_t[0x2000], 1);

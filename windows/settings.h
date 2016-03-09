@@ -5,10 +5,10 @@
 #ifndef C_BOY_SETTINGS_H
 #define C_BOY_SETTINGS_H
 #include <string>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Event.hpp>
-
-class Settings {
+#include <SFML/Graphics.hpp>
+#include "../arch/emu.h"
+#include "../imgui/imgui.h"
+class Emu::Settings {
 public:
     enum GbButton {
         Dpad_Right,
@@ -32,13 +32,18 @@ public:
         float scaleFactor;
         bool enableAA;
         bool enableDebug;
+        int ffSpeed;
     };
     VisualSettings visualSettings;
-    Settings();
-    bool open;
-    void draw(sf::RenderWindow *window);
+    Settings(Emu *emu);
+    void open();
+    void close();
+    void draw();
     void processEvent(sf::Event event);
 private:
+    Emu *emu;
+    bool isOpen;
+    bool cpuPauseSave;
     sf::View view;
     enum CurrentWindow {
         Controls,
@@ -49,6 +54,8 @@ private:
     void drawConfigButton(const char *name, GbButton button);
     int buttonToConfigure;
     CurrentWindow currentWindow;
+    ImVec4 controlsColor;
+    ImVec4 visualsColor;
     void drawControlsWindow();
     void drawVisualsWindow();
 };

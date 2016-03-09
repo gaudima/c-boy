@@ -7,8 +7,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include "../windows/settings.h"
-#include "../windows/filedialog.h"
 
 class Emu {
 public:
@@ -20,7 +18,11 @@ public:
 
     class Joy;
 
-    Emu();
+    class Settings;
+
+    class FileDialog;
+
+    Emu(std::string path);
 
     ~Emu();
 
@@ -32,26 +34,30 @@ public:
 
     void loadRom(std::string rom);
 
+    void reset();
+
 private:
     std::string getFpsTitleString();
 
     void displayDebugInfo();
 
     void drawMenuBar();
-
+    std::string path;
     sf::Clock fpsClock;
     sf::Font debugFont;
     sf::Text debugText;
     sf::RectangleShape debugFrame;
     size_t frameCounter;
     double avgFps;
+    double fpsAccum;
+    bool fastForward;
     sf::RenderWindow *window;
     Cpu *cpu;
     Gpu *gpu;
     Mmu *mmu;
     Joy *joy;
     Settings *settings;
-
+    FileDialog *fileDialog;
 };
 
 

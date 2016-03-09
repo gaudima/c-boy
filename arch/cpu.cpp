@@ -6,6 +6,7 @@
 #include "gpu.h"
 #include "mmu.h"
 #include "ops.h"
+#include "joy.h"
 #include "../cppformat/format.h"
 #include <sstream>
 #include <iomanip>
@@ -98,6 +99,7 @@ void Emu::Cpu::exec() {
     updateTimer(r.m);
     emu->gpu->exec(r.m);
     processInterrupts();
+    //emu->joy->updateJoypad();
 }
 
 void Emu::Cpu::runFrame() {

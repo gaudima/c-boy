@@ -7,31 +7,37 @@
 #include "mmu.h"
 #include "gpu.h"
 #include "joy.h"
+#include "../windows/filedialog.h"
+#include "../windows/settings.h"
 #include "../imgui/imgui.h"
 #include "../imgui/imgui-events-SFML.h"
 #include "../imgui/imgui-rendering-SFML.h"
 #include "../cppformat/format.h"
 
-Emu::Emu() {
-    window = new sf::RenderWindow(sf::VideoMode(400, 300), "C-Boy");
+Emu::Emu(std::string path) {
+    this->path = path;
+    window = new sf::RenderWindow(sf::VideoMode(400, 300), "C-Boy", sf::Style::Default & ~sf::Style::Resize);
     cpu = new Cpu(this);
     mmu = new Mmu(this);
     gpu = new Gpu(this);
     joy = new Joy(this);
-    settings = new Settings();
-    FileDialog dialog;
-    if (!debugFont.loadFromFile("ubuntu.ttf")) {
+    settings = new Settings(this);
+    fileDialog = new FileDialog(this);
+    if (!debugFont.loadFromFile("ubuntu_mono.ttf")) {
         std::cout << "Unable to load font" << std::endl;
     }
     debugText.setFont(debugFont);
-    debugText.setCharacterSize(12);
+    debugText.setCharacterSize(14);
     debugText.setPosition(0, 19);
     debugText.setColor(sf::Color(255,255,255));
     debugFrame.setSize(sf::Vector2f(180, 140));
     debugFrame.setPosition(0, 19);
     debugFrame.setFillColor(sf::Color(0, 0, 0, 190));
-    loadRom("loz.gb");
+    //loadRom("loz.gb");
+    cpu->paused = true;
+    fastForward = false;
     frameCounter = 1;
+    fpsAccum = 0;
 }
 
 Emu::~Emu() {
@@ -40,6 +46,7 @@ Emu::~Emu() {
     delete gpu;
     delete joy;
     delete settings;
+    delete fileDialog;
     delete window;
 }
 
@@ -49,6 +56,15 @@ void Emu::runFrame() {
 
 void Emu::loadRom(std::string rom) {
     mmu->loadRom(rom);
+}
+
+void Emu::reset() {
+    cpu->reset();
+    gpu->reset();
+    mmu->reset();
+    fastForward = false;
+    frameCounter = 1;
+    fpsAccum = 0;
 }
 
 void Emu::run() {
@@ -70,19 +86,14 @@ void Emu::run() {
                     cpu->paused = !cpu->paused;
                 } else if (event.key.code == sf::Keyboard::F11) {
                     cpu->exec();
-                } else {
-                    joy->keyPressed(event.key);
+                } else if (event.key.code == sf::Keyboard::F10) {
+                    if(!fastForward) {
+                        window->setFramerateLimit(std::round(60.f * settings->visualSettings.ffSpeed / 100.f));
+                    } else {
+                        window->setFramerateLimit(60);
+                    }
+                    fastForward = !fastForward;
                 }
-            } else if(event.type == sf::Event::KeyReleased) {
-                joy->keyReleased(event.key);
-            }
-            if(event.type == sf::Event::JoystickButtonPressed) {
-                joy->keyPressed(event.joystickButton);
-            } else if(event.type == sf::Event::JoystickButtonReleased) {
-                joy->keyReleased(event.joystickButton);
-            }
-            if(event.type == sf::Event::JoystickMoved) {
-                joy->axisMove(event.joystickMove);
             }
         }
         window->clear(sf::Color::Black);
@@ -90,14 +101,15 @@ void Emu::run() {
         runFrame();
         window->setTitle(getFpsTitleString());
         displayDebugInfo();
-        cpu->paused = settings->open;
-        settings->draw(window);
+        settings->draw();
+        fileDialog->draw();
         ImGui::Render();
         window->display();
     }
 }
 
 void Emu::initImGui() {
+    ImGui::GetIO().Fonts->AddFontFromFileTTF("ubuntu_mono.ttf", 14, NULL, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
     ImGui::SFML::SetRenderTarget(*window);
     ImGui::SFML::InitImGuiRendering();
     ImGui::SFML::SetWindow(*window);
@@ -117,10 +129,11 @@ void Emu::drawMenuBar() {
             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar);
     if(ImGui::BeginMenuBar()) {
         if(ImGui::Button("Load Rom")) {
+            fileDialog->open();
         }
         ImGui::SameLine();
         if(ImGui::Button("Settings")) {
-            settings->open = true;
+            settings->open();
         }
         ImGui::EndMenuBar();
     }
@@ -131,9 +144,14 @@ void Emu::drawMenuBar() {
 
 std::string Emu::getFpsTitleString() {
     double fps = 1000000.f / fpsClock.restart().asMicroseconds();
-    avgFps = ((frameCounter - 1) * avgFps + fps) / frameCounter;
+    fpsAccum += fps;
     frameCounter++;
-    return fmt::format("C-Boy : FPS: {:.2f} : Avg FPS: {:.2f}", fps, avgFps);;
+    if(frameCounter == 21) {
+        avgFps = fpsAccum / 20;
+        fpsAccum = 0;
+        frameCounter = 1;
+    }
+    return fmt::format("C-Boy : FPS: {:.2f} : Avg FPS: {:.2f}", fps, avgFps);
 }
 
 void Emu::displayDebugInfo() {

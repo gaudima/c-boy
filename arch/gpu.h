@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 #include "emu.h"
+#include "../data/splashscreen.h"
 
 class Emu::Gpu {
 public:
@@ -24,6 +25,8 @@ public:
     sf::Color colors[4];
 
     void reset();
+
+    void drawSplashScreen();
 
     void exec(uint16_t m);
 
