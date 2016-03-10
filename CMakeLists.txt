@@ -18,7 +18,7 @@ set(SOURCE_FILES
         jsoncpp/jsoncpp.cpp cppformat/format.cc cppformat/format.h
         arch/joy.cpp arch/joy.h arch/mbc/mbc.cpp arch/mbc/mbc.h
         arch/mbc/mbc2.cpp arch/mbc/mbc2.h arch/mbc/nombc.cpp
-        arch/mbc/nombc.h arch/mbc/mbc1.cpp arch/mbc/mbc1.h windows/filedialog.cpp windows/filedialog.h data/splashscreen.h data/splashscreen.cpp)
+        arch/mbc/nombc.h arch/mbc/mbc1.cpp arch/mbc/mbc1.h windows/filedialog.cpp windows/filedialog.h data/splashscreen.h data/splashscreen.cpp arch/mbc/mbc3.cpp arch/mbc/mbc3.h)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 

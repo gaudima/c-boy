@@ -13,6 +13,7 @@
 #include "../imgui/imgui-events-SFML.h"
 #include "../imgui/imgui-rendering-SFML.h"
 #include "../cppformat/format.h"
+#include <sstream>
 
 Emu::Emu(std::string path) {
     this->path = path;
@@ -34,6 +35,8 @@ Emu::Emu(std::string path) {
     debugFrame.setPosition(0, 19);
     debugFrame.setFillColor(sf::Color(0, 0, 0, 190));
     //loadRom("loz.gb");
+    bpString[0] = '0';
+    bpString[1] = 0;
     cpu->paused = true;
     fastForward = false;
     frameCounter = 1;
@@ -84,7 +87,7 @@ void Emu::run() {
             if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::F12) {
                     cpu->paused = !cpu->paused;
-                } else if (event.key.code == sf::Keyboard::F11) {
+                } else if (event.key.code == sf::Keyboard::F7) {
                     cpu->exec();
                 } else if (event.key.code == sf::Keyboard::F10) {
                     if(!fastForward) {
@@ -134,6 +137,33 @@ void Emu::drawMenuBar() {
         ImGui::SameLine();
         if(ImGui::Button("Settings")) {
             settings->open();
+        }
+        if(settings->visualSettings.enableDebug) {
+            ImGui::SameLine(ImGui::GetWindowWidth() - 150);
+            ImGui::Text("Breakpoint:");
+            ImGui::SameLine();
+            ImGui::PushItemWidth(-1);
+            struct UserData {
+                char *buf;
+                uint16_t *bp;
+            };
+            UserData uData;
+            uData.buf = bpString;
+            uData.bp = &cpu->bpVal;
+            ImGui::InputText("", bpString, 5, ImGuiInputTextFlags_CharsHexadecimal |
+                    ImGuiInputTextFlags_CharsUppercase |
+                    ImGuiInputTextFlags_CallbackCharFilter,
+                             [](ImGuiTextEditCallbackData *data)->int{
+                                 UserData *ud = (UserData*)data->UserData;
+                                 if(strlen(ud->buf) < 4) {
+                                     std::stringstream ss;
+                                     ss << std::hex << ud->buf << (char)data->EventChar;
+                                     ss >> *ud->bp;
+                                     std::cout << *ud->bp << std::endl;
+                                 }
+                                 return 0;
+                             },
+                             (void *)&uData);
         }
         ImGui::EndMenuBar();
     }

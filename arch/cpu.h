@@ -67,6 +67,8 @@ public:
 
     bool paused;
 
+    uint16_t bpVal;
+
     void reset();
 
     void exec();
@@ -91,6 +93,7 @@ private:
     Emu *emu;
     uint16_t frameClock;
     int timerClocks;
+    int timerClockCounter;
     int dividerClocks;
 };
 

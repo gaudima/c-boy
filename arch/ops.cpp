@@ -1112,7 +1112,7 @@ Emu::Cpu::Ops::Op Emu::Cpu::Ops::opTable[256] = {
         {"RET Z",                   0, 2, RETZ},      // 0xc8
         {"RET",                     0, 4, RET},       // 0xc9
         {"JP Z, 0x{:04X}",          2, 3, JPZnn},     // 0xca
-        {"CB %s",                   1, 1, MAPcb},     // 0xcb
+        {"CB {}",                   1, 1, MAPcb},     // 0xcb
         {"CALL Z, 0x{:04X}",        2, 3, CALLZnn},   // 0xcc
         {"CALL 0x{:04X}",           2, 6, CALLnn},    // 0xcd
         {"ADC 0x{:02X}",            1, 2, ADCn},      // 0xce

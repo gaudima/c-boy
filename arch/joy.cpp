@@ -63,7 +63,7 @@ void Emu::Joy::setGbKeyState(Settings::GbButton key, bool pressed) {
 
     uint8_t keyState = emu->mmu->rbu(0xFF00);
     bool requestInterrupt = false;
-    if((!dPadButton && (keyState & 0x20) == 0) || (dPadButton && (keyState & 0x10) == 0)) {
+    if((!dPadButton && ((keyState & 0x20) == 0)) || (dPadButton && ((keyState & 0x10) == 0))) {
         requestInterrupt = true;
     }
 
@@ -76,11 +76,10 @@ uint8_t Emu::Joy::getJoypadState() {
     updateJoypad();
     uint8_t state = emu->mmu->rbu(0xFF00);
     int shift = -1;
+    state |= 0xCF;
     if((state & 0x10) != 0) {
-        state &= 0xEF;
         shift = 4;
     } else if((state & 0x20) != 0) {
-        state &= 0xDF;
         shift = 0;
     }
     if (shift >= 0) {

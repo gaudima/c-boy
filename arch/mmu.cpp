@@ -30,6 +30,7 @@ bios {0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x
       0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50}
 {
     this->emu = emu;
+    mbc = NULL;
     reset();
 }
 
@@ -147,10 +148,23 @@ void Emu::Mmu::loadRom(std::string filename) {
     in.seekg(0, std::ios::beg);
     in.read((char*)fullRom, romSize);
     in.close();
-    uint8_t ramBanks = fullRom[0x0149];
+    std::cout << std::dec << romSize / 0x4000 << std::endl;
+    uint8_t ramBanks;
+    switch(fullRom[0x0149]) {
+        case 0:
+        case 1:
+        case 2:
+            ramBanks = 1;
+            break;
+        case 3:
+            ramBanks = 4;
+            break;
+        case 4:
+            ramBanks = 16;
+    }
     switch(fullRom[0x0147]) {
         case 0:
-            mbc = new NoMbc(fullRom, romSize / 0x4000, new uint8_t[0x2000], 1);
+            mbc = new NoMbc(fullRom, romSize / 0x4000, new uint8_t[ramBanks * 0x2000], ramBanks);
             break;
         case 1:
         case 2:
@@ -160,7 +174,7 @@ void Emu::Mmu::loadRom(std::string filename) {
             break;
         case 5:
         case 6:
-            mbc = new Mbc2(fullRom, romSize / 0x4000, new uint8_t[0x2000], 1);
+            mbc = new Mbc2(fullRom, romSize / 0x4000, new uint8_t[ramBanks * 0x2000], ramBanks);
             break;
     }
     //std::cout<<std::hex<<(int)ram[0]<<std::endl;

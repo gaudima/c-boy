@@ -5,6 +5,7 @@
 #include "filedialog.h"
 #include "../imgui/imgui.h"
 #include "../arch/cpu.h"
+#include "settings.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -234,7 +235,9 @@ void Emu::FileDialog::draw() {
                     emu->reset();
                     emu->loadRom(appendToPath(currentPath, currentDir[i].name));
                     close();
-                    emu->cpu->paused = false;
+                    if(!emu->settings->visualSettings.enableDebug) {
+                        emu->cpu->paused = false;
+                    }
                 }
             }
             ImGui::NextColumn();

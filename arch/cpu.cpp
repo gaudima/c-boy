@@ -33,40 +33,52 @@ void Emu::Cpu::reset() {
     r.m = 0;
     r.ime = 0;
     halt = 0;
-
+    timerClocks = 4;
+    timerClockCounter = 0;
     paused = false;
     std::cout << "Cpu: Reset" << std::endl;
 }
 
 std::string Emu::Cpu::getRegString() {
-    fmt::MemoryWriter writer;
-    writer.write("af: 0x{:04X}\n", r.af);
-    writer.write("bc: 0x{:04X}\n", r.bc);
-    writer.write("de: 0x{:04X}\n", r.de);
-    writer.write("hl: 0x{:04X}\n", r.hl);
-    writer.write("sp: 0x{:04X}\n", r.sp);
-    writer.write("pc: 0x{:04X}\n", r.pc);
-    writer.write("m: {:d}\n", r.m);
-    writer.write("ime: {:d}\n", r.ime);
+    std::string regs = fmt::format("af: 0x{:04X}\n"
+                                   "bc: 0x{:04X}\n"
+                                   "de: 0x{:04X}\n"
+                                   "hl: 0x{:04X}\n"
+                                   "sp: 0x{:04X}\n"
+                                   "pc: 0x{:04X}\n"
+                                   "m: {:d}\n"
+                                   "ime: {:d}\n"
+                                   "op: ",
+                                   r.af,
+                                   r.bc,
+                                   r.de,
+                                   r.hl,
+                                   r.sp,
+                                   r.pc,
+                                   r.m,
+                                   r.ime);
     uint8_t op = emu->mmu->rb(r.pc);
-    writer << "op: ";
     switch(Ops::opTable[op].argsize) {
         case 0: {
-            writer.write(Ops::opTable[op].desc);
+            regs += Ops::opTable[op].desc;
         }
             break;
         case 1: {
             uint8_t arg = emu->mmu->rb(r.pc + 1);
-            writer.write(Ops::opTable[op].desc, arg);
+            if(op == 0xCB) {
+                regs += fmt::format(Ops::opTable[op].desc, Ops::cbTable[arg].desc);
+            } else {
+                regs += fmt::format(Ops::opTable[op].desc, arg);
+            }
         }
             break;
         case 2: {
-            uint16_t arg = emu->mmu->rb(r.pc + 1);
-            writer.write(Ops::opTable[op].desc, arg);
+            uint16_t arg = emu->mmu->rw(r.pc + 1);
+            regs += fmt::format(Ops::opTable[op].desc, arg);
         }
             break;
     }
-    return writer.str();
+    return regs;
 }
 
 void Emu::Cpu::exec() {
@@ -91,7 +103,6 @@ void Emu::Cpu::exec() {
         }
             break;
     }
-    char ss[1000];
     r.m += Ops::opTable[op].m;
     clock += r.m;
     frameClock += r.m;
@@ -99,11 +110,13 @@ void Emu::Cpu::exec() {
     updateTimer(r.m);
     emu->gpu->exec(r.m);
     processInterrupts();
-    //emu->joy->updateJoypad();
 }
 
 void Emu::Cpu::runFrame() {
     while (!paused) {
+        if(r.pc == bpVal && emu->settings->visualSettings.enableDebug) {
+            paused = true;
+        }
         exec();
         if (frameClock > 17555) {
             frameClock = 0;
@@ -121,10 +134,13 @@ void Emu::Cpu::processInterrupts() {
     if (emu->cpu->r.ime == 1) {
         uint8_t requests = emu->mmu->rb(0xFF0F);
         uint8_t enabled = emu->mmu->rb(0xFFFF);
-        if (requests > 0) {
+        if (requests & 0x1F) {
             for (int i = 0; i < 5; i++) {
+//                if(i == 2 && (requests & (1 << i))) {
+//                    std::cout << (requests & (1 << i)) << " " << (enabled & (1 << i)) << std::endl;
+//                }
                 if ((requests & (1 << i)) && (enabled & (1 << i))) {
-                    serviceInterrupt((InterruptId) i);
+                        serviceInterrupt((InterruptId) i);
                 }
             }
         }
@@ -150,6 +166,11 @@ void Emu::Cpu::serviceInterrupt(InterruptId id) {
             Ops::CALLnn(0x0060);
             break;
     }
+    //r.m = 6;
+    //updateDivider(r.m);
+    //updateTimer(r.m);
+    //emu->gpu->exec(r.m);
+    //processInterrupts();
 //    clock += 6;
 //    frameClock += 6;
 }
@@ -176,14 +197,17 @@ void Emu::Cpu::updateTimer(uint16_t m) {
     uint8_t tmc = emu->mmu->rb(0xFF07);
     bool timerEnabled = ((tmc & 0x04) != 0);
     if (timerEnabled) {
-        timerClocks -= m;
-        if (timerClocks <= 0) {
-            setTimerFreq();
-            if (emu->mmu->rb(0xFF05) == 255) {
-                emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF06));
+        timerClockCounter += m;
+        //std::cout << timerClockCounter << " " <<m <<std::endl;
+        if (timerClockCounter >= timerClocks) {
+            int passedTimerTicks = timerClockCounter / timerClocks;
+            timerClockCounter %= timerClocks;
+            if (emu->mmu->rb(0xFF05) + passedTimerTicks >= 255) {
+                emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF05) + passedTimerTicks + emu->mmu->rb(0xFF06));
                 requestInterrupt(Timer);
             } else {
-                emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF05) + 1);
+                //std::cout << "timerUpdate" << std::endl;
+                emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF05) + passedTimerTicks);
             }
         }
     }

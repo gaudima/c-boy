@@ -15,6 +15,7 @@ public:
     class NoMbc;
     class Mbc1;
     class Mbc2;
+    class Mbc3;
 
     Mmu(Emu *emu);
 

@@ -42,7 +42,7 @@ void Emu::Mmu::Mbc1::wb(uint16_t addr, uint8_t val) {
     } else if(0x4000 <= addr && addr <= 0x5FFF) {
         if(romBanking) {
             romOffsetBanks &= 0x1F;
-            val &= ~(0x1F);
+            val = (val & 0x03) << 5;
             romOffsetBanks |= val;
             if(romOffsetBanks == 0) {
                 romOffsetBanks++;

@@ -328,19 +328,17 @@ void Emu::Gpu::updateLCDStatus() {
     uint8_t mode = 0;
     bool needToRequestInterrupt = false;
 
+    status &= 0xFC;
     if (line >= 144) {
         mode = 1;
         status |= 0x01;
-        status &= 0xFD;
         needToRequestInterrupt = ((status & 0x10) != 0);
     } else {
         size_t m2b = 114 - 20;
         size_t m3b = m2b - 43;
-
         if (scanlineClock >= m2b) {
             mode = 2;
             status |= 0x02;
-            status &= 0xFE;
             needToRequestInterrupt = ((status & 0x20) != 0);
         } else if (scanlineClock >= m3b) {
             mode = 3;
@@ -348,7 +346,6 @@ void Emu::Gpu::updateLCDStatus() {
 
         } else {
             mode = 0;
-            status &= 0xFC;
             needToRequestInterrupt = ((status & 0x08) != 0);
         }
     }

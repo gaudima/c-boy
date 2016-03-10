@@ -51,6 +51,7 @@ private:
     double avgFps;
     double fpsAccum;
     bool fastForward;
+    char bpString[5];
     sf::RenderWindow *window;
     Cpu *cpu;
     Gpu *gpu;
