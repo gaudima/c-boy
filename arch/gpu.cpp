@@ -202,9 +202,9 @@ void Emu::Gpu::updateSpritePriority() {
         uint8_t index = sprite * 4;
         spritePriority.push_back(0xFE00 + index);
     }
-    std::stable_sort(spritePriority.begin(), spritePriority.end(), [&](uint16_t a, uint16_t b) {
-        return (emu->mmu->rb(b + 1) < emu->mmu->rb(a + 1));
-    });
+//    std::stable_sort(spritePriority.begin(), spritePriority.end(), [&](uint16_t a, uint16_t b) {
+//        return (emu->mmu->rb(b + 1) < emu->mmu->rb(a + 1));
+//    });
     /*for(int i = 0; i < 40; i++) {
         std::cout << std::hex << spritePriority[i] << ":" << std::dec << (int)emu->mmu->rb(spritePriority[i] + 1) << " ";
     }

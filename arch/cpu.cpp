@@ -33,7 +33,7 @@ void Emu::Cpu::reset() {
     r.m = 0;
     r.ime = 0;
     halt = 0;
-    timerClocks = 4;
+    timerClocks = 0;
     timerClockCounter = 0;
     paused = false;
     std::cout << "Cpu: Reset" << std::endl;
@@ -179,16 +179,16 @@ void Emu::Cpu::setTimerFreq() {
     uint8_t freqNum = emu->mmu->rb(0xFF07) & 0x03;
     switch (freqNum) {
         case 0:
-            timerClocks = clockSpeed / 4096;
+            timerClocks += clockSpeed / 4096;
             break;
         case 1:
-            timerClocks = clockSpeed / 262144;
+            timerClocks += clockSpeed / 262144;
             break;
         case 2:
-            timerClocks = clockSpeed / 65536;
+            timerClocks += clockSpeed / 65536;
             break;
         case 3:
-            timerClocks = clockSpeed / 16384;
+            timerClocks += clockSpeed / 16384;
             break;
     }
 }
@@ -199,15 +199,13 @@ void Emu::Cpu::updateTimer(uint16_t m) {
     if (timerEnabled) {
         timerClocks -= m;
         if (timerClocks <= 0) {
-            //int passedTimerTicks = timerClockCounter / timerClocks;
+            setTimerFreq();
             if(emu->mmu->rb(0xFF05) == 0xFF) {
                 emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF06));
                 requestInterrupt(Timer);
             } else {
                 emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF05) + 1);
             }
-            //timerClocks  = 0;
-            //timerClockCounter = 0;
         }
     }
 }
