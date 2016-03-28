@@ -141,6 +141,7 @@ std::string Emu::FileDialog::winPathToUnix(std::string path) {
 }
 
 std::string Emu::FileDialog::cp1251ToUtf8(std::string in) {
+#ifdef _WIN32
     std::string out;
     for(size_t i = 0; i < in.length(); i++) {
         char c = in[i];
@@ -159,13 +160,18 @@ std::string Emu::FileDialog::cp1251ToUtf8(std::string in) {
         }
     }
     return out;
+#else
+    return in;
+#endif
 }
 
 std::string Emu::FileDialog::appendToPath(std::string path, std::string app) {
+    std::cout << path << " " << app << std::endl;
+
     if(path.length() > 0 && path[path.length() - 1] != '/') {
         path.append("/");
     }
-    if(app == "..") {
+    if(app.find("..") == 0) {
         path = path.substr(0, path.rfind("/", path.length() - 2) + 1);
     } else {
         path.append(app);

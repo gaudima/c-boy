@@ -134,7 +134,7 @@ void Emu::Cpu::processInterrupts() {
     if (emu->cpu->r.ime == 1) {
         uint8_t requests = emu->mmu->rb(0xFF0F);
         uint8_t enabled = emu->mmu->rb(0xFFFF);
-        if (requests & 0x1F) {
+        if (requests > 0) {
             for (int i = 0; i < 5; i++) {
 //                if(i == 2 && (requests & (1 << i))) {
 //                    std::cout << (requests & (1 << i)) << " " << (enabled & (1 << i)) << std::endl;
@@ -197,18 +197,17 @@ void Emu::Cpu::updateTimer(uint16_t m) {
     uint8_t tmc = emu->mmu->rb(0xFF07);
     bool timerEnabled = ((tmc & 0x04) != 0);
     if (timerEnabled) {
-        timerClockCounter += m;
-        //std::cout << timerClockCounter << " " <<m <<std::endl;
-        if (timerClockCounter >= timerClocks) {
-            int passedTimerTicks = timerClockCounter / timerClocks;
-            timerClockCounter %= timerClocks;
-            if (emu->mmu->rb(0xFF05) + passedTimerTicks >= 255) {
-                emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF05) + passedTimerTicks + emu->mmu->rb(0xFF06));
+        timerClocks -= m;
+        if (timerClocks <= 0) {
+            //int passedTimerTicks = timerClockCounter / timerClocks;
+            if(emu->mmu->rb(0xFF05) == 0xFF) {
+                emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF06));
                 requestInterrupt(Timer);
             } else {
-                //std::cout << "timerUpdate" << std::endl;
-                emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF05) + passedTimerTicks);
+                emu->mmu->wb(0xFF05, emu->mmu->rb(0xFF05) + 1);
             }
+            //timerClocks  = 0;
+            //timerClockCounter = 0;
         }
     }
 }
